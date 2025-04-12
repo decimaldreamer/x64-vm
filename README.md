@@ -9,23 +9,36 @@ A modern, high-performance x64 virtual machine implementation with advanced feat
   - Modern CPU features support
   - Efficient memory management
 
-- **Nested Virtualization**
+- **Advanced Nested Virtualization**
   - Run virtual machines inside other virtual machines
   - Extended Page Tables (EPT) support
   - Virtual Machine Control Structure (VMCS) management
   - Thread-safe operations
+  - VM state management (pause/resume)
+  - State saving and restoration
+  - Event handling system
+  - Performance monitoring
+  - Advanced debugging features
 
 - **Memory Management**
   - Dynamic memory allocation
   - Page table management
   - Memory protection mechanisms
   - Efficient address translation
+  - Memory access optimization
+  - Cache line optimization
+  - Memory prefetching
 
 - **Performance Optimizations**
   - Thread-safe operations
   - Efficient resource utilization
   - Modern C++ features
   - Optimized instruction execution
+  - Instruction prefetching
+  - Branch prediction
+  - Pipeline optimization
+  - TLB optimization
+  - Page table caching
 
 ## 🛠️ Building
 
@@ -50,6 +63,7 @@ cmake --build .
 cd build
 ctest
 ```
+
 ## 🧩 Core Components
 
 ### Virtual Machine
@@ -63,6 +77,9 @@ ctest
 - Handles VM exits and entries
 - Manages EPT and VMCS
 - Provides thread-safe operations
+- Advanced state management
+- Performance monitoring
+- Debugging support
 
 ## 🤝 Contributing
 
@@ -70,8 +87,4 @@ Contributions are welcome! Please read our [Contributing Guidelines](CONTRIBUTIN
 
 ## 📈 Roadmap
 
-- [ ] Enhanced nested virtualization support
-- [ ] Performance optimizations
-- [ ] Additional architecture support
-- [ ] Advanced debugging features
 - [ ] GUI management interface
