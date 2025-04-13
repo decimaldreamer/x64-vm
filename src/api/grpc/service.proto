@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+package x64vm;
+
+service VirtualMachineService {
+    rpc Execute (ExecuteRequest) returns (ExecuteResponse) {}
+    rpc GetStatus (StatusRequest) returns (StatusResponse) {}
+    rpc GetMetrics (MetricsRequest) returns (MetricsResponse) {}
+    rpc UpdateConfig (ConfigRequest) returns (ConfigResponse) {}
+    rpc ClearCache (CacheRequest) returns (CacheResponse) {}
+    rpc StreamMetrics (StreamRequest) returns (stream MetricsResponse) {}
+}
+
+message ExecuteRequest {
+    bytes code = 1;
+    map<string, string> parameters = 2;
+}
+
+message ExecuteResponse {
+    bytes result = 1;
+    string error = 2;
+}
+
+message StatusRequest {
+    bool detailed = 1;
+}
+
+message StatusResponse {
+    string status = 1;
+    string version = 2;
+    int64 uptime = 3;
+    map<string, string> details = 4;
+}
+
+message MetricsRequest {
+    bool include_system = 1;
+    bool include_performance = 2;
+}
+
+message MetricsResponse {
+    int64 instructions_executed = 1;
+    int64 memory_usage = 2;
+    double cpu_usage = 3;
+    map<string, double> performance_metrics = 4;
+    map<string, double> system_metrics = 5;
+}
+
+message ConfigRequest {
+    map<string, string> settings = 1;
+}
+
+message ConfigResponse {
+    bool success = 1;
+    string error = 2;
+}
+
+message CacheRequest {
+    bool clear_all = 1;
+    repeated string keys = 2;
+}
+
+message CacheResponse {
+    bool success = 1;
+    int32 items_cleared = 2;
+}
+
+message StreamRequest {
+    int32 interval_ms = 1;
+    repeated string metrics = 2;
+} 

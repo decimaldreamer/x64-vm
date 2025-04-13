@@ -236,3 +236,66 @@ int main() {
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+### Runtime Application Self-Protection (RASP)
+
+The RASP manager provides real-time security monitoring and protection for the virtual machine:
+
+- **Memory Access Protection**: Monitors and controls user space memory accesses
+- **System Call Protection**: Controls and validates system calls
+- **File Access Protection**: Enforces file access rules and permissions
+- **Continuous Monitoring**: Background thread for real-time security monitoring
+- **Dynamic Rule Management**: Adapts security policies based on violation patterns
+
+#### Key Security Features
+
+- Memory access validation
+- System call filtering
+- File access control
+- Suspicious behavior detection
+- Automatic rule adjustment
+- Violation logging and reporting
+
+## Building
+
+```bash
+mkdir build
+cd build
+cmake ..
+make
+```
+
+## Running
+
+```bash
+./x64vm [options]
+```
+
+## Security
+
+The virtual machine implements multiple layers of security:
+
+1. **RASP Protection**
+   - Memory access validation
+   - System call filtering
+   - File access control
+   - Real-time monitoring
+
+2. **HSM Integration**
+   - Hardware-based encryption
+   - Secure key storage
+   - Cryptographic operations
+
+3. **Network Security**
+   - TLS encryption
+   - Secure API endpoints
+   - Access control
+
+## Monitoring
+
+The system includes comprehensive monitoring capabilities:
+
+- Performance metrics
+- Security events
+- Resource usage
+- System health

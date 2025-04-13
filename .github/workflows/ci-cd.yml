@@ -1,0 +1,110 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        build-type: [Debug, Release]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up CMake
+      uses: actions/setup-cmake@v1
+
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          cmake \
+          libssl-dev \
+          libopengl-dev \
+          libdirectx-dev \
+          libvulkan-dev \
+          libtensorflow-dev \
+          libboost-system-dev \
+          libboost-serialization-dev \
+          llvm-dev \
+          libpcap-dev \
+          zlib1g-dev
+
+    - name: Configure CMake
+      run: |
+        cmake -B build -DCMAKE_BUILD_TYPE=${{ matrix.build-type }}
+
+    - name: Build
+      run: |
+        cmake --build build --config ${{ matrix.build-type }}
+
+    - name: Run Tests
+      run: |
+        cd build
+        ctest -C ${{ matrix.build-type }} --output-on-failure
+
+  docker:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+
+    - name: Login to DockerHub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        push: true
+        tags: |
+          ${{ secrets.DOCKERHUB_USERNAME }}/x64vm:latest
+          ${{ secrets.DOCKERHUB_USERNAME }}/x64vm:${{ github.sha }}
+
+  deploy:
+    needs: docker
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+
+    - name: Deploy to ECS
+      run: |
+        aws ecs update-service --cluster x64vm-cluster --service x64vm-service --force-new-deployment
+
+  notify:
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+    - name: Notify on Slack
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      if: always() 

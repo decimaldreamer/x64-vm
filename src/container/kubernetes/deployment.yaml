@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: x64vm
+  labels:
+    app: x64vm
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: x64vm
+  template:
+    metadata:
+      labels:
+        app: x64vm
+    spec:
+      containers:
+      - name: x64vm
+        image: x64vm:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+          name: http
+        - containerPort: 443
+          name: https
+        - containerPort: 8080
+          name: api
+        resources:
+          requests:
+            cpu: "1"
+            memory: "1Gi"
+          limits:
+            cpu: "2"
+            memory: "2Gi"
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/x64vm
+      volumes:
+      - name: config-volume
+        configMap:
+          name: x64vm-config 

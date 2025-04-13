@@ -1,0 +1,82 @@
+resources:
+- name: x64vm-cluster
+  type: container.v1.cluster
+  properties:
+    zone: us-central1-a
+    cluster:
+      name: x64vm-cluster
+      initialNodeCount: 3
+      nodeConfig:
+        machineType: n1-standard-2
+        oauthScopes:
+        - https://www.googleapis.com/auth/compute
+        - https://www.googleapis.com/auth/devstorage.read_only
+        - https://www.googleapis.com/auth/logging.write
+        - https://www.googleapis.com/auth/monitoring
+      masterAuth:
+        username: admin
+        password: $(ref.x64vm-cluster-password)
+      loggingService: logging.googleapis.com
+      monitoringService: monitoring.googleapis.com
+      network: default
+      subnetwork: default
+      addonsConfig:
+        httpLoadBalancing:
+          disabled: false
+        horizontalPodAutoscaling:
+          disabled: false
+        kubernetesDashboard:
+          disabled: false
+        networkPolicyConfig:
+          disabled: false
+
+- name: x64vm-cluster-password
+  type: random.v1.password
+  properties:
+    length: 16
+    includeSymbols: true
+
+- name: x64vm-service-account
+  type: iam.v1.serviceAccount
+  properties:
+    accountId: x64vm-service-account
+    displayName: x64VM Service Account
+
+- name: x64vm-service-account-key
+  type: iam.v1.serviceAccountKey
+  properties:
+    serviceAccount: $(ref.x64vm-service-account.email)
+    privateKeyType: TYPE_GOOGLE_CREDENTIALS_FILE
+
+- name: x64vm-logging
+  type: logging.v2.logSink
+  properties:
+    name: x64vm-logging
+    destination: storage.googleapis.com/$(ref.x64vm-logging-bucket.name)
+    filter: resource.type="gke_cluster" AND resource.labels.cluster_name="$(ref.x64vm-cluster.name)"
+
+- name: x64vm-logging-bucket
+  type: storage.v1.bucket
+  properties:
+    name: x64vm-logs-$(ref.x64vm-cluster-password.password)
+    location: US
+    storageClass: STANDARD
+    versioning:
+      enabled: true
+    lifecycle:
+      rule:
+      - action:
+          type: Delete
+        condition:
+          age: 30
+          isLive: false
+
+outputs:
+- name: clusterName
+  value: $(ref.x64vm-cluster.name)
+- name: clusterEndpoint
+  value: $(ref.x64vm-cluster.endpoint)
+- name: serviceAccountEmail
+  value: $(ref.x64vm-service-account.email)
+- name: loggingBucket
+  value: $(ref.x64vm-logging-bucket.name) 
